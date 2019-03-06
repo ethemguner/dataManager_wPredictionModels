@@ -179,9 +179,8 @@ class Window(QtWidgets.QWidget):
         print(self.prediction)
         
         self.r2Score_lin = r2_score(y_test, self.prediction)
-        self.modelName = "Linear Regression"
+        self.r2_Score(self.r2Score_lin)
         
-        self.r2_Score(self.r2Score_lin, self.modelName)
     def polynomial_reg_model(self):
         
         for j in range(0, len(self.x_column_list)):
@@ -201,9 +200,7 @@ class Window(QtWidgets.QWidget):
         print(self.prediction)
         
         self.r2Score_poly = r2_score(y_test, self.prediction)
-        self.modelName = "Polynomial Regression"
-        
-        self.r2_Score(self.r2Score_poly, self.modelName)
+        self.r2_Score(self.r2Score_poly)
         
     def sv_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -226,9 +223,7 @@ class Window(QtWidgets.QWidget):
         print(self.prediction)
         
         self.r2Score_sv = r2_score(y_test, self.prediction)
-        self.modelName = "Support Vector Regression"
-        
-        self.r2_Score(self.r2Score_sv, self.modelName)
+        self.r2_Score(self.r2Score_sv)
         
     def decisionTree_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -245,9 +240,7 @@ class Window(QtWidgets.QWidget):
         print(self.prediction)
         
         self.r2Score_dt = r2_score(y_test, self.prediction)
-        self.modelName = "Decision Tree Regression"
-        
-        self.r2_Score(self.r2Score_dt, self.modelName)
+        self.r2_Score(self.r2Score_dt)
         
     def randomForest_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -264,11 +257,10 @@ class Window(QtWidgets.QWidget):
         print(self.prediction)
         
         self.r2Score_rf = r2_score(y_test, self.prediction)
-        self.modelName = "Random Forest Regression"
+        self.r2_Score(self.r2Score_rf)
         
-        self.r2_Score(self.r2Score_rf, self.modelName)
-        
-    def r2_Score(self, score, model_name):
+    def r2_Score(self, score):
+        model_name = self.RegressionModels_combobox.currentText()
         self.r2score_value.setText(model_name + "\n" + str(score))
     
     def clear_selections(self):
