@@ -34,7 +34,8 @@ class Window(QtWidgets.QWidget):
         self.RegressionModels_combobox = QtWidgets.QComboBox()
         self.regressionLabel = QtWidgets.QLabel("Regression Model:")
         self.createModel_button = QtWidgets.QPushButton("Create Model")
-        self.compareR2scores = QtWidgets.QPushButton("Show R^2 Scores")
+        self.r2score_label = QtWidgets.QLabel("R2 Score:")
+        self.r2score_value = QtWidgets.QLabel("Selected Model\n...")
         
         # Adding widgets and creating layouts.
         vbox = QtWidgets.QVBoxLayout()
@@ -52,7 +53,8 @@ class Window(QtWidgets.QWidget):
         vbox.addWidget(self.createButton)
         vbox.addWidget(self.clearSelectionsButton)
         vbox.addWidget(self.createModel_button)
-        vbox.addWidget(self.compareR2scores)
+        vbox.addWidget(self.r2score_label)
+        vbox.addWidget(self.r2score_value)
         vbox.addWidget(self.infoLabel)
         
         hbox = QtWidgets.QHBoxLayout()
@@ -60,7 +62,7 @@ class Window(QtWidgets.QWidget):
         self.setLayout(hbox)
         self.show()
         
-        self.infoLabel.setAlignment(QtCore.Qt.AlignCenter)
+
         self.RegressionModels_combobox.addItem("Select a Model")
         self.RegressionModels_combobox.addItems(["Linear Regression", "Polynomial Regression",
                                                  "Support Vector Regression", "Decision Tree Regression",
@@ -71,7 +73,6 @@ class Window(QtWidgets.QWidget):
         self.defineX_button.clicked.connect(self.define_x)
         self.clearSelectionsButton.clicked.connect(self.clear_selections)
         self.createModel_button.clicked.connect(self.define_model)
-        self.compareR2scores.clicked.connect(self.r2_Score)
         
         # These lists will hold x and y variables (columns). Columns will be hold as DataFrame object.
         self.x_column_list = []
@@ -176,9 +177,11 @@ class Window(QtWidgets.QWidget):
         self.prediction = linear_reg.predict(x_test)
         print(y_test)
         print(self.prediction)
+        
         self.r2Score_lin = r2_score(y_test, self.prediction)
         self.modelName = "Linear Regression"
         
+        self.r2_Score(self.r2Score_lin, self.modelName)
     def polynomial_reg_model(self):
         
         for j in range(0, len(self.x_column_list)):
@@ -194,11 +197,13 @@ class Window(QtWidgets.QWidget):
         linear_reg = LinearRegression()
         linear_reg.fit(x_poly, y)
         self.prediction = linear_reg.predict(polynomial_reg.fit_transform(x_test))
-        
         print(y_test)
         print(self.prediction)
+        
         self.r2Score_poly = r2_score(y_test, self.prediction)
         self.modelName = "Polynomial Regression"
+        
+        self.r2_Score(self.r2Score_poly, self.modelName)
         
     def sv_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -208,7 +213,6 @@ class Window(QtWidgets.QWidget):
         
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
         
-
         sc1 = StandardScaler()
         scaled_x = sc1.fit_transform(x)
         sc2 = StandardScaler()
@@ -220,8 +224,11 @@ class Window(QtWidgets.QWidget):
         self.prediction = sv_reg.predict(x_test)
         print(y_test)
         print(self.prediction)
+        
         self.r2Score_sv = r2_score(y_test, self.prediction)
         self.modelName = "Support Vector Regression"
+        
+        self.r2_Score(self.r2Score_sv, self.modelName)
         
     def decisionTree_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -231,14 +238,16 @@ class Window(QtWidgets.QWidget):
         
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
         
-
         decisinTree_reg = DecisionTreeRegressor(random_state=0)
         decisinTree_reg.fit(x,y)
         self.prediction =  decisinTree_reg.predict(x_test)
         print(y_test)
         print(self.prediction)
+        
         self.r2Score_dt = r2_score(y_test, self.prediction)
         self.modelName = "Decision Tree Regression"
+        
+        self.r2_Score(self.r2Score_dt, self.modelName)
         
     def randomForest_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -250,14 +259,17 @@ class Window(QtWidgets.QWidget):
         
         randomForest_reg = RandomForestRegressor(n_estimators = 10, random_state=0)
         randomForest_reg.fit(x, y)
-        
         self.prediction = randomForest_reg.predict(x_test)
         print(y_test)
         print(self.prediction)
+        
         self.r2Score_rf = r2_score(y_test, self.prediction)
         self.modelName = "Random Forest Regression"
+        
+        self.r2_Score(self.r2Score_rf, self.modelName)
+        
     def r2_Score(self, score, model_name):
-        pass
+        self.r2score_value.setText(model_name + "\n" + str(score))
     
     def clear_selections(self):
         for i in range(0, self.df_row):
@@ -273,10 +285,16 @@ class Window(QtWidgets.QWidget):
         # Font adjustments for table and other labels.
         self.tableFont = QtGui.QFont("Trebuchet MS", 12, QtGui.QFont.Bold)
         self.infoFont = QtGui.QFont("Trebuchet MS", 9, QtGui.QFont.Bold)
+        self.aTitleFont = QtGui.QFont("Trebuchet MS", 10, QtGui.QFont.Bold)
         
         self.infoLabel.setStyleSheet("QLabel {background : #464542; color: #FFD700;}")
         self.data_table.setFont(self.tableFont)
         self.infoLabel.setFont(self.infoFont)
+        
+        self.infoLabel.setAlignment(QtCore.Qt.AlignCenter)
+        
+        self.r2score_label.setFont(self.aTitleFont)
+        self.r2score_value.setFont(self.infoFont)
         
 
 app = QtWidgets.QApplication(sys.argv)
