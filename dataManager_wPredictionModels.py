@@ -17,18 +17,19 @@ class Window(QtWidgets.QWidget):
         self.init_ui()
         self.setWindowTitle("Modeling")
         self.theme()
+        self.modelFeaturesDisabled()
     def init_ui(self):
         # Creating objects.
         self.data_table = QtWidgets.QTableWidget()
         self.inputColumn_y = QtWidgets.QLineEdit()
-        self.labelCell_y = QtWidgets.QLabel("y Column:")
+        self.yColumn_label = QtWidgets.QLabel("y Column:")
         self.createButton = QtWidgets.QPushButton("Set Table")
         self.labelFileName = QtWidgets.QLabel("File Name:")
         self.fileName = QtWidgets.QLineEdit()
         self.defineY_button = QtWidgets.QPushButton("Define y Variable")
         self.defineX_button = QtWidgets.QPushButton("Define x Variable")
         self.inputColumn_x = QtWidgets.QLineEdit()
-        self.labelCell_x = QtWidgets.QLabel("x Column:")
+        self.xColumn_label = QtWidgets.QLabel("x Column:")
         self.clearSelectionsButton = QtWidgets.QPushButton("Clear Selections")
         self.infoLabel = QtWidgets.QLabel("Information line.")
         self.RegressionModels_combobox = QtWidgets.QComboBox()
@@ -36,23 +37,35 @@ class Window(QtWidgets.QWidget):
         self.createModel_button = QtWidgets.QPushButton("Create Model")
         self.r2score_label = QtWidgets.QLabel("R2 Score:")
         self.r2score_value = QtWidgets.QLabel("Selected Model\n...")
+        self.polyDegree_label = QtWidgets.QLabel("Polynomial Regression Degree:")
+        self.polyDegree_input = QtWidgets.QLineEdit()
+        self.svrKernel_label = QtWidgets.QLabel("SVR Kernel:")
+        self.svrKernel_combobox = QtWidgets.QComboBox()
+        self.rf_nestimators_label = QtWidgets.QLabel("Random Forest n_estimators:")
+        self.rf_nestimators_input = QtWidgets.QLineEdit()
         
         # Adding widgets and creating layouts.
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.data_table)
-        vbox.addWidget(self.labelCell_y)
+        vbox.addWidget(self.labelFileName)
+        vbox.addWidget(self.fileName)
+        vbox.addWidget(self.createButton)
+        vbox.addWidget(self.yColumn_label)
         vbox.addWidget(self.inputColumn_y)
         vbox.addWidget(self.defineY_button)
-        vbox.addWidget(self.labelCell_x)
+        vbox.addWidget(self.xColumn_label)
         vbox.addWidget(self.inputColumn_x)
         vbox.addWidget(self.defineX_button)
         vbox.addWidget(self.regressionLabel)
         vbox.addWidget(self.RegressionModels_combobox)
-        vbox.addWidget(self.labelFileName)
-        vbox.addWidget(self.fileName)
-        vbox.addWidget(self.createButton)
-        vbox.addWidget(self.clearSelectionsButton)
+        vbox.addWidget(self.svrKernel_label)
+        vbox.addWidget(self.svrKernel_combobox)
+        vbox.addWidget(self.polyDegree_label)
+        vbox.addWidget(self.polyDegree_input)
+        vbox.addWidget(self.rf_nestimators_label)
+        vbox.addWidget(self.rf_nestimators_input)
         vbox.addWidget(self.createModel_button)
+        vbox.addWidget(self.clearSelectionsButton)
         vbox.addWidget(self.r2score_label)
         vbox.addWidget(self.r2score_value)
         vbox.addWidget(self.infoLabel)
@@ -67,12 +80,17 @@ class Window(QtWidgets.QWidget):
         self.RegressionModels_combobox.addItems(["Linear Regression", "Polynomial Regression",
                                                  "Support Vector Regression", "Decision Tree Regression",
                                                  "Random Forest Regression"])
+    
+        self.svrKernel_combobox.addItem("Select a Kernel")
+        self.svrKernel_combobox.addItems(["rbf", "linear", "poly"])
+        
         # Buttons are connecting their functions.
         self.createButton.clicked.connect(self.creatingTable)
         self.defineY_button.clicked.connect(self.define_y)
         self.defineX_button.clicked.connect(self.define_x)
         self.clearSelectionsButton.clicked.connect(self.clear_selections)
         self.createModel_button.clicked.connect(self.define_model)
+        self.RegressionModels_combobox.currentIndexChanged.connect(self.enableInputs)
         
         # These lists will hold x and y variables (columns). Columns will be hold as DataFrame object.
         self.x_column_list = []
@@ -144,6 +162,32 @@ class Window(QtWidgets.QWidget):
 
         self.infoLabel.setText("Column " + x_column + " has selected and added as x variable.")
         
+    def enableInputs(self):
+        current_model_index = self.RegressionModels_combobox.currentIndex()
+        # 2 -> Polynomial
+        # 3 -> SVR
+        # 5 -> Random Forest
+        
+        if current_model_index == 2:
+            self.polyDegree_input.setEnabled(True)
+            self.svrKernel_combobox.setEnabled(False)
+            self.rf_nestimators_input.setEnabled(False)
+            
+        elif current_model_index == 3:
+            self.svrKernel_combobox.setEnabled(True)
+            self.polyDegree_input.setEnabled(False)
+            self.rf_nestimators_input.setEnabled(False)
+            
+        elif current_model_index == 5:
+            self.rf_nestimators_input.setEnabled(True)
+            self.svrKernel_combobox.setEnabled(False)
+            self.polyDegree_input.setEnabled(False)
+        else:
+            self.polyDegree_input.setEnabled(False)
+            self.svrKernel_combobox.setEnabled(False)
+            self.rf_nestimators_input.setEnabled(False)
+            
+            
     def define_model(self):
         selectedModel = self.RegressionModels_combobox.currentIndex()
         # 1 -> Linear
@@ -180,6 +224,7 @@ class Window(QtWidgets.QWidget):
         
         self.r2Score_lin = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_lin)
+        self.infoLabel.setText("Linear Regression Model has created.")
         
     def polynomial_reg_model(self):
         
@@ -190,7 +235,7 @@ class Window(QtWidgets.QWidget):
         
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
         
-        polynomial_reg = PolynomialFeatures(degree = 3)
+        polynomial_reg = PolynomialFeatures(degree = int(self.polyDegree_input.text()) )
         x_poly = polynomial_reg.fit_transform(x)
         
         linear_reg = LinearRegression()
@@ -201,6 +246,7 @@ class Window(QtWidgets.QWidget):
         
         self.r2Score_poly = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_poly)
+        self.infoLabel.setText("Polynomial Regression Model has created.")
         
     def sv_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -215,7 +261,8 @@ class Window(QtWidgets.QWidget):
         sc2 = StandardScaler()
         scaled_y = sc2.fit_transform(y)
         
-        sv_reg = SVR(kernel = 'rbf')
+        self.kernel = self.svrKernel_combobox.currentText()
+        sv_reg = SVR(kernel = '{}'.format(self.kernel))
         sv_reg.fit(scaled_x, scaled_y)
         
         self.prediction = sv_reg.predict(x_test)
@@ -224,6 +271,7 @@ class Window(QtWidgets.QWidget):
         
         self.r2Score_sv = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_sv)
+        self.infoLabel.setText("SV Regression Model has created.")
         
     def decisionTree_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -241,6 +289,7 @@ class Window(QtWidgets.QWidget):
         
         self.r2Score_dt = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_dt)
+        self.infoLabel.setText("Decision Tree R. Model has created.")
         
     def randomForest_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -250,7 +299,7 @@ class Window(QtWidgets.QWidget):
         
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
         
-        randomForest_reg = RandomForestRegressor(n_estimators = 10, random_state=0)
+        randomForest_reg = RandomForestRegressor(n_estimators = int(self.rf_nestimators_input.text()), random_state=0)
         randomForest_reg.fit(x, y)
         self.prediction = randomForest_reg.predict(x_test)
         print(y_test)
@@ -258,11 +307,12 @@ class Window(QtWidgets.QWidget):
         
         self.r2Score_rf = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_rf)
+        self.infoLabel.setText("Random Forest R. Model has created.")
         
     def r2_Score(self, score):
         model_name = self.RegressionModels_combobox.currentText()
         self.r2score_value.setText(model_name + "\n" + str(score))
-    
+        
     def clear_selections(self):
         for i in range(0, self.df_row):
             for k in range(0, self.df_col):
@@ -272,6 +322,11 @@ class Window(QtWidgets.QWidget):
         self.y_column_list.clear()
         
         self.infoLabel.setText("Selections have deleted.")
+    
+    def modelFeaturesDisabled(self):
+        self.polyDegree_input.setEnabled(False)
+        self.svrKernel_combobox.setEnabled(False)
+        self.rf_nestimators_input.setEnabled(False)
         
     def theme(self):
         # Font adjustments for table and other labels.
