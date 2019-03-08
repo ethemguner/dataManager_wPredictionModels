@@ -371,10 +371,10 @@ class Window(QtWidgets.QWidget):
     def showResults(self, original_data, predicted_data):
         # Why do we have to use try-except? Because SVR, Random Forest and Decision Tree Regression models are
         # Giving the predicted data as a different dimension and as a numpy array. 
-        # We cannot call the column value like 371.statment. We will take
+        # We cannot call the column value like 391.statment. We will take
         # out of bound (IndexError) If we'll call it like that. 
         # So, that structure isn't working  for every model. We're catching the IndexError and showing the values
-        # according to their predicted data shape.
+        # according to their predicted data shape and type.
         try:
             length = len(original_data)
             
@@ -440,7 +440,7 @@ class Window(QtWidgets.QWidget):
         # Predicted and original data tables are setting.
         for i in range(0,length):
                 cell = original_data[i][0] # In other models, original_data (self.originalData) comes as a DataFrame. Right here It's a numpy array.
-                cell2 = predicted_data[i] # 1 dimension. (Look at 396.statement to see the difference.)
+                cell2 = predicted_data[i] # 1 dimension. (Look at 401.statement to see the difference.)
                 self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
                 self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
                 self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
@@ -455,7 +455,7 @@ class Window(QtWidgets.QWidget):
         self.originalData.setRowCount(orgData_row)
         self.originalData.setColumnCount(orgData_col)
         
-        # RF and DT models are giving different dimension value but also, (go 461.statement)
+        # RF and DT models are giving different dimension value but also, (go 465.statement)
         predData_row = predicted_data.shape[0]
         
         self.predictedData.setRowCount(predData_row)
@@ -463,7 +463,7 @@ class Window(QtWidgets.QWidget):
         
         for i in range(0,length):
                 cell = original_data.iat[i,0] # It gives the the original data as a DataFrame (Like Linear and Polynomial) but,
-                cell2 = predicted_data[i] # In here, Its 1 dimensional. Look at the 396.statement to see the difference.
+                cell2 = predicted_data[i] # In here, Its 1 dimensional. Look at the 401.statement to see the difference.
                 self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
                 self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
                 self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
