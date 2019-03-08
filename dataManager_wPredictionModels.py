@@ -18,8 +18,10 @@ class Window(QtWidgets.QWidget):
         self.setWindowTitle("Modeling")
         self.theme()
         self.modelFeaturesDisabled()
+        
     def init_ui(self):
         # Creating objects.
+        self.data_label = QtWidgets.QLabel("Data:")
         self.data_table = QtWidgets.QTableWidget()
         self.inputColumn_y = QtWidgets.QLineEdit()
         self.yColumn_label = QtWidgets.QLabel("y Column:")
@@ -35,17 +37,24 @@ class Window(QtWidgets.QWidget):
         self.RegressionModels_combobox = QtWidgets.QComboBox()
         self.regressionLabel = QtWidgets.QLabel("Regression Model:")
         self.createModel_button = QtWidgets.QPushButton("Create Model")
-        self.r2score_label = QtWidgets.QLabel("R2 Score:")
-        self.r2score_value = QtWidgets.QLabel("Selected Model\n...")
+        self.r2score_label = QtWidgets.QLabel("R2 SCORE")
+        self.r2score_value = QtWidgets.QLabel("Selected Model:\n...\n\nScore:\n...")
         self.polyDegree_label = QtWidgets.QLabel("Polynomial Regression Degree:")
         self.polyDegree_input = QtWidgets.QLineEdit()
         self.svrKernel_label = QtWidgets.QLabel("SVR Kernel:")
         self.svrKernel_combobox = QtWidgets.QComboBox()
         self.rf_nestimators_label = QtWidgets.QLabel("Random Forest n_estimators:")
         self.rf_nestimators_input = QtWidgets.QLineEdit()
+        self.originalData_label = QtWidgets.QLabel("y_test (Original data):")
+        self.originalData = QtWidgets.QTableWidget()
+        self.predictedData_label = QtWidgets.QLabel("Predicted data:")
+        self.predictedData = QtWidgets.QTableWidget()
+        self.emptylabel = QtWidgets.QLabel()
+        self.emptylabel2 = QtWidgets.QLabel()
         
         # Adding widgets and creating layouts.
         vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(self.data_label)
         vbox.addWidget(self.data_table)
         vbox.addWidget(self.labelFileName)
         vbox.addWidget(self.fileName)
@@ -56,22 +65,34 @@ class Window(QtWidgets.QWidget):
         vbox.addWidget(self.xColumn_label)
         vbox.addWidget(self.inputColumn_x)
         vbox.addWidget(self.defineX_button)
-        vbox.addWidget(self.regressionLabel)
-        vbox.addWidget(self.RegressionModels_combobox)
-        vbox.addWidget(self.svrKernel_label)
-        vbox.addWidget(self.svrKernel_combobox)
-        vbox.addWidget(self.polyDegree_label)
-        vbox.addWidget(self.polyDegree_input)
-        vbox.addWidget(self.rf_nestimators_label)
-        vbox.addWidget(self.rf_nestimators_input)
-        vbox.addWidget(self.createModel_button)
-        vbox.addWidget(self.clearSelectionsButton)
-        vbox.addWidget(self.r2score_label)
-        vbox.addWidget(self.r2score_value)
         vbox.addWidget(self.infoLabel)
         
+        vbox2 = QtWidgets.QVBoxLayout()
+        vbox2.addWidget(self.regressionLabel)
+        vbox2.addWidget(self.RegressionModels_combobox)
+        vbox2.addWidget(self.svrKernel_label)
+        vbox2.addWidget(self.svrKernel_combobox)
+        vbox2.addWidget(self.polyDegree_label)
+        vbox2.addWidget(self.polyDegree_input)
+        vbox2.addWidget(self.rf_nestimators_label)
+        vbox2.addWidget(self.rf_nestimators_input)
+        vbox2.addWidget(self.createModel_button)
+        vbox2.addWidget(self.clearSelectionsButton)
+        vbox2.addWidget(self.r2score_label)
+        vbox2.addWidget(self.r2score_value)
+        vbox2.addWidget(self.emptylabel)
+        vbox2.addWidget(self.emptylabel2)
+        
+        vbox3 = QtWidgets.QVBoxLayout()
+        vbox3.addWidget(self.originalData_label)
+        vbox3.addWidget(self.originalData)
+        vbox3.addWidget(self.predictedData_label)
+        vbox3.addWidget(self.predictedData)
+
         hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(vbox)
+        hbox.addLayout(vbox2)
+        hbox.addLayout(vbox3)
         self.setLayout(hbox)
         self.show()
         
@@ -219,12 +240,11 @@ class Window(QtWidgets.QWidget):
         linear_reg = LinearRegression()
         linear_reg.fit(x_train,y_train)
         self.prediction = linear_reg.predict(x_test)
-        print(y_test)
-        print(self.prediction)
         
         self.r2Score_lin = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_lin)
         self.infoLabel.setText("Linear Regression Model has created.")
+        self.showResults(y_test, self.prediction)
         
     def polynomial_reg_model(self):
         
@@ -241,12 +261,11 @@ class Window(QtWidgets.QWidget):
         linear_reg = LinearRegression()
         linear_reg.fit(x_poly, y)
         self.prediction = linear_reg.predict(polynomial_reg.fit_transform(x_test))
-        print(y_test)
-        print(self.prediction)
         
         self.r2Score_poly = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_poly)
         self.infoLabel.setText("Polynomial Regression Model has created.")
+        self.showResults(y_test, self.prediction)
         
     def sv_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -254,24 +273,23 @@ class Window(QtWidgets.QWidget):
         for k in range(0, len(self.y_column_list)):
             y = pd.DataFrame(data = self.y_column_list[k])
         
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
-        
         sc1 = StandardScaler()
         scaled_x = sc1.fit_transform(x)
         sc2 = StandardScaler()
         scaled_y = sc2.fit_transform(y)
+        
+        x_train, x_test, y_train, y_test = train_test_split(scaled_x, scaled_y, test_size=0.33, random_state=0)
         
         self.kernel = self.svrKernel_combobox.currentText()
         sv_reg = SVR(kernel = '{}'.format(self.kernel))
         sv_reg.fit(scaled_x, scaled_y)
         
         self.prediction = sv_reg.predict(x_test)
-        print(y_test)
-        print(self.prediction)
         
         self.r2Score_sv = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_sv)
         self.infoLabel.setText("SV Regression Model has created.")
+        self.showResults(y_test, self.prediction)
         
     def decisionTree_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -284,12 +302,11 @@ class Window(QtWidgets.QWidget):
         decisinTree_reg = DecisionTreeRegressor(random_state=0)
         decisinTree_reg.fit(x,y)
         self.prediction =  decisinTree_reg.predict(x_test)
-        print(y_test)
-        print(self.prediction)
         
         self.r2Score_dt = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_dt)
         self.infoLabel.setText("Decision Tree R. Model has created.")
+        self.showResults(y_test, self.prediction)
         
     def randomForest_reg_model(self):
         for j in range(0, len(self.x_column_list)):
@@ -302,17 +319,93 @@ class Window(QtWidgets.QWidget):
         randomForest_reg = RandomForestRegressor(n_estimators = int(self.rf_nestimators_input.text()), random_state=0)
         randomForest_reg.fit(x, y)
         self.prediction = randomForest_reg.predict(x_test)
-        print(y_test)
-        print(self.prediction)
-        
+
         self.r2Score_rf = r2_score(y_test, self.prediction)
         self.r2_Score(self.r2Score_rf)
         self.infoLabel.setText("Random Forest R. Model has created.")
+        self.showResults(y_test, self.prediction)
         
     def r2_Score(self, score):
         model_name = self.RegressionModels_combobox.currentText()
-        self.r2score_value.setText(model_name + "\n" + str(score))
+        self.r2score_value.setText("Selected Model:\n{}\n\nScore:\n{}".format(model_name, str(score)))
         
+    def showResults(self, original_data, predicted_data):
+        try:
+            length = len(original_data)
+            
+            orgData_row = original_data.shape[0]
+            orgData_col = original_data.shape[1]
+            
+            self.originalData.setRowCount(orgData_row)
+            self.originalData.setColumnCount(orgData_col)
+            
+            predData_row = predicted_data.shape[0]
+            predData_col = predicted_data.shape[1]
+            
+            self.predictedData.setRowCount(predData_row)
+            self.predictedData.setColumnCount(predData_col)
+            
+            for i in range(0,length):
+                cell = original_data.iat[i,0]
+                cell2 = predicted_data[i][0]
+                self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
+                self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
+                
+                self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
+                self.predictedData.item(i,0).setBackground(QtGui.QColor(255,215,0))
+        except IndexError:
+            self.originalData.setRowCount(0)
+            self.originalData.setColumnCount(0)
+            
+            current_model = self.RegressionModels_combobox.currentIndex()
+            
+            if current_model == 3:
+                self.svr_showingResults(original_data, predicted_data)
+            else:
+                self.rf_dt_showingResults(original_data, predicted_data)
+    def svr_showingResults(self, original_data, predicted_data):
+        length = len(original_data)
+        
+        orgData_row = original_data.shape[0]
+        orgData_col = original_data.shape[1]
+            
+        self.originalData.setRowCount(orgData_row)
+        self.originalData.setColumnCount(orgData_col)
+        
+        predData_row = predicted_data.shape[0]
+        
+        self.predictedData.setRowCount(predData_row)
+        self.predictedData.setColumnCount(1)
+        
+        for i in range(0,length):
+                cell = original_data[i][0]
+                cell2 = predicted_data[i]
+                self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
+                self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
+                self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
+                self.predictedData.item(i,0).setBackground(QtGui.QColor(255,215,0))
+                
+    def rf_dt_showingResults(self, original_data, predicted_data):
+        length = len(original_data)
+        
+        orgData_row = original_data.shape[0]
+        orgData_col = original_data.shape[1]
+            
+        self.originalData.setRowCount(orgData_row)
+        self.originalData.setColumnCount(orgData_col)
+        
+        predData_row = predicted_data.shape[0]
+        self.predictedData.setRowCount(predData_row)
+        self.predictedData.setColumnCount(1)
+        
+        for i in range(0,length):
+                cell = original_data.iat[i,0]
+                cell2 = predicted_data[i]
+                self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
+                self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
+                self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
+                self.predictedData.item(i,0).setBackground(QtGui.QColor(255,215,0))
+    
     def clear_selections(self):
         for i in range(0, self.df_row):
             for k in range(0, self.df_col):
@@ -330,22 +423,41 @@ class Window(QtWidgets.QWidget):
         
     def theme(self):
         # Font adjustments for table and other labels.
-        self.tableFont = QtGui.QFont("Trebuchet MS", 12, QtGui.QFont.Bold)
+        self.tableFont = QtGui.QFont("Trebuchet MS", 10, QtGui.QFont.Bold)
         self.infoFont = QtGui.QFont("Trebuchet MS", 9, QtGui.QFont.Bold)
-        self.aTitleFont = QtGui.QFont("Trebuchet MS", 10, QtGui.QFont.Bold)
+        self.TitleFont = QtGui.QFont("Trebuchet MS", 11, QtGui.QFont.Bold)
+        self.r2score_titleFont = QtGui.QFont("Trebuchet MS", 12, QtGui.QFont.Bold)
         
         self.infoLabel.setStyleSheet("QLabel {background : #464542; color: #FFD700;}")
         self.data_table.setFont(self.tableFont)
         self.infoLabel.setFont(self.infoFont)
+        self.originalData.setFont(self.tableFont)
+        self.predictedData.setFont(self.tableFont)
         
         self.infoLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.r2score_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.r2score_value.setAlignment(QtCore.Qt.AlignCenter)
         
-        self.r2score_label.setFont(self.aTitleFont)
-        self.r2score_value.setFont(self.infoFont)
+        self.r2score_label.setFont(self.r2score_titleFont)
+        self.r2score_value.setFont(self.TitleFont)
+        
+        self.labelFileName.setFont(self.TitleFont)
+        self.yColumn_label.setFont(self.TitleFont)
+        self.xColumn_label.setFont(self.TitleFont)
+        self.regressionLabel.setFont(self.TitleFont)
+        self.svrKernel_label.setFont(self.TitleFont)
+        self.polyDegree_label.setFont(self.TitleFont)
+        self.rf_nestimators_label.setFont(self.TitleFont)
+        self.regressionLabel.setFont(self.TitleFont)
+        self.originalData_label.setFont(self.TitleFont)
+        self.predictedData_label.setFont(self.TitleFont)
+        self.data_label.setFont(self.TitleFont)
+        
         
 
 app = QtWidgets.QApplication(sys.argv)
 window = Window()
 window.move(200, 120)
+window.setFixedSize(1000, 700)
 app.setStyle("Fusion")
 sys.exit(app.exec_())
