@@ -15,6 +15,10 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 
+# File Op.
+import datetime
+import os
+
 class Window(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -56,6 +60,7 @@ class Window(QtWidgets.QWidget):
         self.predictedData = QtWidgets.QTableWidget()
         self.emptylabel = QtWidgets.QLabel("""Enter the .csv file name (exact name)\nClick 'Set Table' Define y variable and x variables.\nSelect a model, enter the features.\nClick 'Create Model'.""")
         self.emptylabel2 = QtWidgets.QLabel("You will see original data and predicted data at the right side.")
+        self.printCorr_button = QtWidgets.QPushButton("Print Corr")
         
         # Adding widgets and creating layouts.
         vbox = QtWidgets.QVBoxLayout()
@@ -82,6 +87,7 @@ class Window(QtWidgets.QWidget):
         vbox2.addWidget(self.rf_nestimators_label)
         vbox2.addWidget(self.rf_nestimators_input)
         vbox2.addWidget(self.createModel_button)
+        vbox2.addWidget(self.printCorr_button)
         vbox2.addWidget(self.clearSelectionsButton)
         vbox2.addWidget(self.r2score_label)
         vbox2.addWidget(self.r2score_value)
@@ -117,6 +123,7 @@ class Window(QtWidgets.QWidget):
         self.clearSelectionsButton.clicked.connect(self.clear_selections)
         self.createModel_button.clicked.connect(self.define_model)
         self.RegressionModels_combobox.currentIndexChanged.connect(self.enableInputs)
+        self.printCorr_button.clicked.connect(self.printCorr)
         
         # These lists will hold x and y variables (columns). Columns will be hold as DataFrame object.
         self.x_column_list = []
@@ -470,7 +477,17 @@ class Window(QtWidgets.QWidget):
                 self.predictedData.item(i,0).setBackground(QtGui.QColor(255,215,0))
     
     ###################### Results showing process has done. ######################
-    
+    def printCorr(self):
+        pd.set_option('display.expand_frame_repr', False)
+        self.data = pd.read_csv(str(self.fileName.text()) + '.csv')
+        self.df_data = pd.DataFrame(self.data)
+
+        now = datetime.datetime.now()
+        today_date = str(now).replace(":","-")
+        file = open("{} Corr {}.txt".format(str(self.fileName.text()),today_date),"w+")
+        file.write(str(self.df_data.corr()))
+        os.startfile("{} Corr {}.txt".format(str(self.fileName.text()),today_date))
+        
     def clear_selections(self):
         for i in range(0, self.df_row):
             for k in range(0, self.df_col):
@@ -492,6 +509,7 @@ class Window(QtWidgets.QWidget):
         self.infoFont = QtGui.QFont("Trebuchet MS", 9, QtGui.QFont.Bold)
         self.TitleFont = QtGui.QFont("Trebuchet MS", 11, QtGui.QFont.Bold)
         self.r2score_titleFont = QtGui.QFont("Trebuchet MS", 12, QtGui.QFont.Bold)
+        self.buttonsFont = QtGui.QFont("Trebuchet MS", 10, QtGui.QFont.Bold)
         
         self.infoLabel.setStyleSheet("QLabel {background : #464542; color: #FFD700;}")
         self.data_table.setFont(self.tableFont)
@@ -520,6 +538,12 @@ class Window(QtWidgets.QWidget):
         self.emptylabel.setFont(self.infoFont)
         self.emptylabel2.setFont(self.infoFont)
         
+        self.defineX_button.setFont(self.buttonsFont)
+        self.defineY_button.setFont(self.buttonsFont)
+        self.createButton.setFont(self.buttonsFont)
+        self.clearSelectionsButton.setFont(self.buttonsFont)
+        self.printCorr_button.setFont(self.buttonsFont)
+        self.createModel_button.setFont(self.buttonsFont)
 
 app = QtWidgets.QApplication(sys.argv)
 window = Window()
