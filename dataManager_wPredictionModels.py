@@ -30,37 +30,37 @@ class Window(QtWidgets.QWidget):
         
     def init_ui(self):
         # Creating objects.
-        self.data_label = QtWidgets.QLabel("Data:")
-        self.data_table = QtWidgets.QTableWidget()
-        self.inputColumn_y = QtWidgets.QLineEdit()
-        self.yColumn_label = QtWidgets.QLabel("y Column:")
-        self.createButton = QtWidgets.QPushButton("Set Table")
-        self.labelFileName = QtWidgets.QLabel("File Name:")
-        self.fileName = QtWidgets.QLineEdit()
-        self.defineY_button = QtWidgets.QPushButton("Define y Variable")
-        self.defineX_button = QtWidgets.QPushButton("Define x Variable")
-        self.inputColumn_x = QtWidgets.QLineEdit()
-        self.xColumn_label = QtWidgets.QLabel("x Column:")
-        self.clearSelectionsButton = QtWidgets.QPushButton("Clear Selections")
-        self.infoLabel = QtWidgets.QLabel("Information line.")
+        self.data_label                = QtWidgets.QLabel("Data:")
+        self.data_table                = QtWidgets.QTableWidget()
+        self.inputColumn_y             = QtWidgets.QLineEdit()
+        self.yColumn_label             = QtWidgets.QLabel("y Column:")
+        self.createButton              = QtWidgets.QPushButton("Set Table")
+        self.labelFileName             = QtWidgets.QLabel("File Name:")
+        self.fileName                  = QtWidgets.QLineEdit()
+        self.defineY_button            = QtWidgets.QPushButton("Define y Variable")
+        self.defineX_button            = QtWidgets.QPushButton("Define x Variable")
+        self.inputColumn_x             = QtWidgets.QLineEdit()
+        self.xColumn_label             = QtWidgets.QLabel("x Column:")
+        self.clearSelectionsButton     = QtWidgets.QPushButton("Clear Selections")
+        self.infoLabel                 = QtWidgets.QLabel("Information line.")
         self.RegressionModels_combobox = QtWidgets.QComboBox()
-        self.regressionLabel = QtWidgets.QLabel("Regression Model:")
-        self.createModel_button = QtWidgets.QPushButton("Create Model")
-        self.r2score_label = QtWidgets.QLabel("R2 SCORE")
-        self.r2score_value = QtWidgets.QLabel("Selected Model:\n...\n\nScore:\n...")
-        self.polyDegree_label = QtWidgets.QLabel("Polynomial Regression Degree:")
-        self.polyDegree_input = QtWidgets.QLineEdit()
-        self.svrKernel_label = QtWidgets.QLabel("SVR Kernel:")
-        self.svrKernel_combobox = QtWidgets.QComboBox()
-        self.rf_nestimators_label = QtWidgets.QLabel("Random Forest n_estimators:")
-        self.rf_nestimators_input = QtWidgets.QLineEdit()
-        self.originalData_label = QtWidgets.QLabel("y_test (Original data):")
-        self.originalData = QtWidgets.QTableWidget()
-        self.predictedData_label = QtWidgets.QLabel("Predicted data:")
-        self.predictedData = QtWidgets.QTableWidget()
-        self.emptylabel = QtWidgets.QLabel("""Enter the .csv file name (exact name)\nClick 'Set Table' Define y variable and x variables.\nSelect a model, enter the features.\nClick 'Create Model'.""")
-        self.emptylabel2 = QtWidgets.QLabel("You will see original data and predicted data at the right side.")
-        self.printCorr_button = QtWidgets.QPushButton("Print Corr")
+        self.regressionLabel           = QtWidgets.QLabel("Regression Model:")
+        self.createModel_button        = QtWidgets.QPushButton("Create Model")
+        self.r2score_label             = QtWidgets.QLabel("R2 SCORE")
+        self.r2score_value             = QtWidgets.QLabel("Selected Model:\n...\n\nScore:\n...")
+        self.polyDegree_label          = QtWidgets.QLabel("Polynomial Regression Degree:")
+        self.polyDegree_input          = QtWidgets.QLineEdit()
+        self.svrKernel_label           = QtWidgets.QLabel("SVR Kernel:")
+        self.svrKernel_combobox        = QtWidgets.QComboBox()
+        self.rf_nestimators_label      = QtWidgets.QLabel("Random Forest n_estimators:")
+        self.rf_nestimators_input      = QtWidgets.QLineEdit()
+        self.originalData_label        = QtWidgets.QLabel("y_test (Original data):")
+        self.originalData              = QtWidgets.QTableWidget()
+        self.predictedData_label       = QtWidgets.QLabel("Predicted data:")
+        self.predictedData             = QtWidgets.QTableWidget()
+        self.emptylabel                = QtWidgets.QLabel("""Enter the .csv file name (exact name)\nClick 'Set Table' Define y variable and x variables.\nSelect a model, enter the features.\nClick 'Create Model'.""")
+        self.emptylabel2               = QtWidgets.QLabel("You will see original data and predicted data at the right side.\nF1 = Print Corr.")
+        self.printCorr_button          = QtWidgets.QPushButton("Print Corr")
         
         # Adding widgets and creating layouts.
         vbox = QtWidgets.QVBoxLayout()
@@ -77,6 +77,7 @@ class Window(QtWidgets.QWidget):
         vbox.addWidget(self.defineX_button)
         vbox.addWidget(self.infoLabel)
         
+        #V2
         vbox2 = QtWidgets.QVBoxLayout()
         vbox2.addWidget(self.regressionLabel)
         vbox2.addWidget(self.RegressionModels_combobox)
@@ -94,6 +95,7 @@ class Window(QtWidgets.QWidget):
         vbox2.addWidget(self.emptylabel)
         vbox2.addWidget(self.emptylabel2)
         
+        #V3
         vbox3 = QtWidgets.QVBoxLayout()
         vbox3.addWidget(self.originalData_label)
         vbox3.addWidget(self.originalData)
@@ -128,11 +130,18 @@ class Window(QtWidgets.QWidget):
         # These lists will hold x and y variables (columns). Columns will be hold as DataFrame object.
         self.x_column_list = []
         self.y_column_list = []
-
+        
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Enter:
+            self.creatingTable()
+        elif e.key() == QtCore.Qt.Key_F1:
+            self.printCorr()
+        
+        
     def creatingTable(self):
         # Reading excel file. Filename is taking from user.
         #                                    \/ 
-        self.data = pd.read_csv(str(self.fileName.text()) + '.csv')
+        self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
         self.df_data = pd.DataFrame(self.data)
         # It turns into a DataFrame.      /\  
         print(self.df_data.corr())
@@ -162,9 +171,9 @@ class Window(QtWidgets.QWidget):
         
     def define_y(self):
         # File uploading.
-        self.data = pd.read_csv(str(self.fileName.text()) + '.csv')
+        self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
         self.df_data = pd.DataFrame(self.data) # File (excel) turns into a DataFrame.
-        y_column = self.inputColumn_y.text()  # holding selected y column index.
+        y_column     = self.inputColumn_y.text()  # holding selected y column index.
         
         for i in range(0, self.df_row):
             self.data_table.item(i, int(y_column)-1).setBackground(QtGui.QColor(12, 253, 0))
@@ -186,9 +195,9 @@ class Window(QtWidgets.QWidget):
         # Giving information to user.
     def define_x(self):
         
-        self.data = pd.read_csv(str(self.fileName.text()) + '.csv')
+        self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
         self.df_data = pd.DataFrame(self.data)
-        x_column = self.inputColumn_x.text()
+        x_column     = self.inputColumn_x.text()
         
         for i in range(0, self.df_row):
             self.data_table.item(i,int(x_column)-1).setBackground(QtGui.QColor(63, 173, 232))
@@ -324,6 +333,7 @@ class Window(QtWidgets.QWidget):
         self.showResults(y_test, self.prediction)
         self.infoLabel.setText("SV Regression Model has created.")
 
+
         
     def decisionTree_reg_model(self):
         
@@ -378,10 +388,10 @@ class Window(QtWidgets.QWidget):
     def showResults(self, original_data, predicted_data):
         # Why do we have to use try-except? Because SVR, Random Forest and Decision Tree Regression models are
         # Giving the predicted data as a different dimension and as a numpy array. 
-        # We cannot call the column value like 391.statment. We will take
+        # We cannot call the column value like 407.statment. We will take
         # out of bound (IndexError) If we'll call it like that. 
         # So, that structure isn't working  for every model. We're catching the IndexError and showing the values
-        # according to their predicted data shape and type.
+        # according to their predicted data's shape and type.
         try:
             length = len(original_data)
             
@@ -447,7 +457,7 @@ class Window(QtWidgets.QWidget):
         # Predicted and original data tables are setting.
         for i in range(0,length):
                 cell = original_data[i][0] # In other models, original_data (self.originalData) comes as a DataFrame. Right here It's a numpy array.
-                cell2 = predicted_data[i] # 1 dimension. (Look at 401.statement to see the difference.)
+                cell2 = predicted_data[i] # 1 dimension. (Look at 418.statement to see the difference.)
                 self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
                 self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
                 self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
@@ -462,7 +472,7 @@ class Window(QtWidgets.QWidget):
         self.originalData.setRowCount(orgData_row)
         self.originalData.setColumnCount(orgData_col)
         
-        # RF and DT models are giving different dimension value but also, (go 465.statement)
+        # RF and DT models are giving different dimension value but also, (go 482.statement)
         predData_row = predicted_data.shape[0]
         
         self.predictedData.setRowCount(predData_row)
@@ -470,13 +480,14 @@ class Window(QtWidgets.QWidget):
         
         for i in range(0,length):
                 cell = original_data.iat[i,0] # It gives the the original data as a DataFrame (Like Linear and Polynomial) but,
-                cell2 = predicted_data[i] # In here, Its 1 dimensional. Look at the 401.statement to see the difference.
+                cell2 = predicted_data[i] # In here, Its 1 dimensional. Look at the 418.statement to see the difference.
                 self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
                 self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
                 self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
                 self.predictedData.item(i,0).setBackground(QtGui.QColor(255,215,0))
     
     ###################### Results showing process has done. ######################
+    
     def printCorr(self):
         pd.set_option('display.expand_frame_repr', False)
         self.data = pd.read_csv(str(self.fileName.text()) + '.csv')
@@ -487,6 +498,7 @@ class Window(QtWidgets.QWidget):
         file = open("{} Corr {}.txt".format(str(self.fileName.text()),today_date),"w+")
         file.write(str(self.df_data.corr()))
         os.startfile("{} Corr {}.txt".format(str(self.fileName.text()),today_date))
+        
         
     def clear_selections(self):
         for i in range(0, self.df_row):
@@ -545,9 +557,21 @@ class Window(QtWidgets.QWidget):
         self.printCorr_button.setFont(self.buttonsFont)
         self.createModel_button.setFont(self.buttonsFont)
 
+        self.defineX_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
+        self.defineY_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
+        self.createButton.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
+        self.clearSelectionsButton.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
+        self.printCorr_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
+        self.createModel_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
+            
+        self.inputColumn_y.setStyleSheet("QLineEdit {background: #FFF8DC; color: 'black';}")
+        self.fileName.setStyleSheet("QLineEdit {background: #FFF8DC; color: 'black';}")
+        self.inputColumn_x.setStyleSheet("QLineEdit {background: #FFF8DC; color: 'black';}")
+            
 app = QtWidgets.QApplication(sys.argv)
 window = Window()
 window.move(200, 120)
 window.setFixedSize(1000, 700)
 app.setStyle("Fusion")
+window.setStyleSheet("Window {background : #F0FFFF;}")
 sys.exit(app.exec_())
