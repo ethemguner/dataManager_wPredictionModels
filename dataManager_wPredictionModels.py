@@ -500,8 +500,7 @@ class Window(QtWidgets.QWidget):
         file = open("{} Corr {}.txt".format(str(self.fileName.text()),today_date),"w+")
         file.write(str(self.df_data.corr()))
         os.startfile("{} Corr {}.txt".format(str(self.fileName.text()),today_date))
-        
-        
+   
     def clear_selections(self):
         for i in range(0, self.df_row):
             for k in range(0, self.df_col):
@@ -525,19 +524,15 @@ class Window(QtWidgets.QWidget):
         self.r2score_titleFont = QtGui.QFont("Trebuchet MS", 12, QtGui.QFont.Bold)
         self.buttonsFont = QtGui.QFont("Trebuchet MS", 10, QtGui.QFont.Bold)
         
-        self.infoLabel.setStyleSheet("QLabel {background : #464542; color: #FFD700;}")
         self.data_table.setFont(self.tableFont)
         self.infoLabel.setFont(self.infoFont)
         self.originalData.setFont(self.tableFont)
         self.predictedData.setFont(self.tableFont)
-        
         self.infoLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.r2score_label.setAlignment(QtCore.Qt.AlignCenter)
         self.r2score_value.setAlignment(QtCore.Qt.AlignCenter)
-        
         self.r2score_label.setFont(self.r2score_titleFont)
         self.r2score_value.setFont(self.TitleFont)
-        
         self.labelFileName.setFont(self.TitleFont)
         self.yColumn_label.setFont(self.TitleFont)
         self.xColumn_label.setFont(self.TitleFont)
@@ -551,21 +546,20 @@ class Window(QtWidgets.QWidget):
         self.data_label.setFont(self.TitleFont)
         self.emptylabel.setFont(self.infoFont)
         self.emptylabel2.setFont(self.infoFont)
-        
         self.defineX_button.setFont(self.buttonsFont)
         self.defineY_button.setFont(self.buttonsFont)
         self.createButton.setFont(self.buttonsFont)
         self.clearSelectionsButton.setFont(self.buttonsFont)
         self.printCorr_button.setFont(self.buttonsFont)
         self.createModel_button.setFont(self.buttonsFont)
-
+        
+        self.infoLabel.setStyleSheet("QLabel {background : #464542; color: #FFD700;}")
         self.defineX_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
         self.defineY_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
         self.createButton.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
         self.clearSelectionsButton.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
         self.printCorr_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
         self.createModel_button.setStyleSheet("QPushButton {background: #008B8B; color: 'white';}")
-            
         self.inputColumn_y.setStyleSheet("QLineEdit {background: #FFF8DC; color: 'black';}")
         self.fileName.setStyleSheet("QLineEdit {background: #FFF8DC; color: 'black';}")
         self.inputColumn_x.setStyleSheet("QLineEdit {background: #FFF8DC; color: 'black';}")
