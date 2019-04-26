@@ -11,7 +11,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 
 # Data preprocessing.
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 
@@ -61,6 +61,7 @@ class Window(QtWidgets.QWidget):
         self.emptylabel                = QtWidgets.QLabel("""Enter the .csv file name (exact name)\nClick 'Set Table' Define y variable and x variables.\nSelect a model, enter the features.\nClick 'Create Model'.""")
         self.emptylabel2               = QtWidgets.QLabel("You will see original data and predicted data at the right side.\nF1 = Print Corr.")
         self.printCorr_button          = QtWidgets.QPushButton("Print Corr")
+        self.msgBox                    = QtWidgets.QMessageBox()
         
         # Adding widgets and creating layouts.
         vbox = QtWidgets.QVBoxLayout()
@@ -141,73 +142,91 @@ class Window(QtWidgets.QWidget):
         
         
     def creatingTable(self):
-        # Reading excel file. Filename is taking from user.
-        #                                    \/ 
-        self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
-        self.df_data = pd.DataFrame(self.data)
-        # It turns into a DataFrame.      /\  
-        print(self.df_data.corr())
-        # We define row and column values with shape method. 
-        # With these values, we can create same table onto the ui. 
-        self.df_row = self.df_data.shape[0] # row // [0] brought row value.
-        self.df_col = self.df_data.shape[1] # column // [1] brought column value.
-        
-        self.data_table.setRowCount(self.df_row)
-        self.data_table.setColumnCount(self.df_col)
-        # Table has done. But there is no data. We adjusted only table shape according to data shape.
-        
-        # Simple for loops. Giving the range limit as df_row. (Last row of our data)
-        # For example If the data has a shape that (28,5), that means there are 28 rows. So, our range is 28 in this for loop.
-        # At 87. statement we're giving the column limit as range of for loop. In our example, It is 5.
-        for rowIndex in range(0, self.df_row):
-            for colIndex in range(0, self.df_col):
-                cell = self.df_data.iat[rowIndex,colIndex] # Datum taking.
-                self.data_table.setItem(rowIndex,colIndex, QtWidgets.QTableWidgetItem(str(cell)))
-                #                               \/                                         \/
-                #                       where datum will set                              datum   
-                # With this one statement, our table turns into exact shape of excel file. Also,
-                # all data will be put exact excel cell in this table.
-                
-        self.infoLabel.setText("Table has set.")
-        # Giving information to user.
+        try:
+            # Reading excel file. Filename is taking from user.
+            #                                    \/ 
+            self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
+            self.df_data = pd.DataFrame(self.data)
+            # It turns into a DataFrame.      /\  
+            print(self.df_data.corr())
+            # We define row and column values with shape method. 
+            # With these values, we can create same table onto the ui. 
+            self.df_row = self.df_data.shape[0] # row // [0] brought row value.
+            self.df_col = self.df_data.shape[1] # column // [1] brought column value.
+            
+            self.data_table.setRowCount(self.df_row)
+            self.data_table.setColumnCount(self.df_col)
+            # Table has done. But there is no data. We adjusted only table shape according to data shape.
+            
+            # Simple for loops. Giving the range limit as df_row. (Last row of our data)
+            # For example If the data has a shape that (28,5), that means there are 28 rows. So, our range is 28 in this for loop.
+            # At 87. statement we're giving the column limit as range of for loop. In our example, It is 5.
+            for rowIndex in range(0, self.df_row):
+                for colIndex in range(0, self.df_col):
+                    cell = self.df_data.iat[rowIndex,colIndex] # Datum taking.
+                    self.data_table.setItem(rowIndex,colIndex, QtWidgets.QTableWidgetItem(str(cell)))
+                    #                               \/                                         \/
+                    #                       where datum will set                              datum   
+                    # With this one statement, our table turns into exact shape of excel file. Also,
+                    # all data will be put exact excel cell in this table.
+                    
+            self.infoLabel.setText("Table has set.")
+            # Giving information to user.
+        except:
+            self.msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+            self.msgBox.setText("File doesn't exist. Check your directory.")
+            self.msgBox.setWindowTitle("Failure")
+            self.msgBox.exec_()
         
     def define_y(self):
-        # File uploading.
-        self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
-        self.df_data = pd.DataFrame(self.data) # File (excel) turns into a DataFrame.
-        y_column     = self.inputColumn_y.text()  # holding selected y column index.
-        
-        for i in range(0, self.df_row):
-            self.data_table.item(i, int(y_column)-1).setBackground(QtGui.QColor(12, 253, 0))
-            #                    \/         \/
-            #         i is holding row   Not will change
-            #         index.             bc, we colored only 1 column.
-            # We set a color for selected column.
-        
-        # Now we will use our lists. In this function, we're taking y column.
-        self.selectedYcolumn = self.df_data.iloc[:,int(y_column)-1:int(y_column)]
-        # Selected column has taken.
-        
-        # Added into the list.
-        self.y_column_list.append(self.selectedYcolumn)
-        
-        #print(self.y_column_list)
-        #print(type(self.y_column_list[0]))
-        self.infoLabel.setText("Column " + y_column + " has selected and added as y variable.")
-        # Giving information to user.
-    def define_x(self):
-        
-        self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
-        self.df_data = pd.DataFrame(self.data)
-        x_column     = self.inputColumn_x.text()
-        
-        for i in range(0, self.df_row):
-            self.data_table.item(i,int(x_column)-1).setBackground(QtGui.QColor(63, 173, 232))
-        
-        self.selectedXcolumn = self.df_data.iloc[:,int(x_column)-1:int(x_column)]
-        self.x_column_list.append(self.selectedXcolumn)
+        try:
+            # File uploading.
+            self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
+            self.df_data = pd.DataFrame(self.data) # File (excel) turns into a DataFrame.
+            y_column     = self.inputColumn_y.text()  # holding selected y column index.
+            
+            for i in range(0, self.df_row):
+                self.data_table.item(i, int(y_column)-1).setBackground(QtGui.QColor(12, 253, 0))
+                #                    \/         \/
+                #         i is holding row   Not will change
+                #         index.             bc, we colored only 1 column.
+                # We set a color for selected column.
+            
+            # Now we will use our lists. In this function, we're taking y column.
+            self.selectedYcolumn = self.df_data.iloc[:,int(y_column)-1:int(y_column)]
+            # Selected column has taken.
+            
+            # Added into the list.
+            self.y_column_list.append(self.selectedYcolumn)
+            
+            #print(self.y_column_list)
+            #print(type(self.y_column_list[0]))
+            self.infoLabel.setText("Column " + y_column + " has selected and added as y variable.")
+            # Giving information to user
+        except ValueError:
+            self.msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            self.msgBox.setText("Column y hasn't defined. Check your input please.")
+            self.msgBox.setWindowTitle("An error occured.")
+            self.msgBox.exec_()
 
-        self.infoLabel.setText("Column " + x_column + " has selected and added as x variable.")
+    def define_x(self):
+        try:
+            self.data    = pd.read_csv(str(self.fileName.text()) + '.csv')
+            self.df_data = pd.DataFrame(self.data)
+            x_column     = self.inputColumn_x.text()
+            
+            for i in range(0, self.df_row):
+                self.data_table.item(i,int(x_column)-1).setBackground(QtGui.QColor(63, 173, 232))
+            
+            self.selectedXcolumn = self.df_data.iloc[:,int(x_column)-1:int(x_column)]
+            self.x_column_list.append(self.selectedXcolumn)
+
+            self.infoLabel.setText("Column " + x_column + " has selected and added as x variable.")
+        except ValueError:
+            self.msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            self.msgBox.setText("Column x hasn't defined. Check your input please.")
+            self.msgBox.setWindowTitle("An error ocured.")
+            self.msgBox.exec_()
         
     def enableInputs(self):
         
@@ -284,57 +303,67 @@ class Window(QtWidgets.QWidget):
         # Giving information to user.
         
     def polynomial_reg_model(self):
-        
-        for j in range(0, len(self.x_column_list)):
-            x = pd.DataFrame(data = self.x_column_list[j])
-        for k in range(0, len(self.y_column_list)):
-            y = pd.DataFrame(data = self.y_column_list[k])
-        
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
-        
-        # We take the polynom degree from user,                  \/ right here.
-        polynomial_reg = PolynomialFeatures(degree = int(self.polyDegree_input.text()) )
-        x_poly = polynomial_reg.fit_transform(x)
-        
-        linear_reg = LinearRegression()
-        linear_reg.fit(x_poly, y)
-        self.prediction = linear_reg.predict(polynomial_reg.fit_transform(x_test))
-        
-        self.r2Score_poly = r2_score(y_test, self.prediction)
-        self.r2_Score(self.r2Score_poly)
-        
-        self.showResults(y_test, self.prediction)
-        self.infoLabel.setText("Polynomial Regression Model has created.")
-        
-    def sv_reg_model(self):
-        
-        for j in range(0, len(self.x_column_list)):
-            x = pd.DataFrame(data = self.x_column_list[j])
-        for k in range(0, len(self.y_column_list)):
-            y = pd.DataFrame(data = self.y_column_list[k])
-        
-        # For SVR Model, we've to scale the data.
-        sc1 = StandardScaler()
-        scaled_x = sc1.fit_transform(x)
-        sc2 = StandardScaler()
-        scaled_y = sc2.fit_transform(y)
-        
-        # Giving scaled data for test/train process,          \/        \/  right here.
-        x_train, x_test, y_train, y_test = train_test_split(scaled_x, scaled_y, test_size=0.33, random_state=0)
-        
-        # Define the kernel. We take from user that value.
-        self.kernel = self.svrKernel_combobox.currentText()
-        # Set the kernel value  \/           \/ with format method.
-        sv_reg = SVR(kernel = '{}'.format(self.kernel))
-        sv_reg.fit(scaled_x, scaled_y)
-        self.prediction = sv_reg.predict(x_test)
-        
-        self.r2Score_sv = r2_score(y_test, self.prediction)
-        self.r2_Score(self.r2Score_sv)
-        
-        self.showResults(y_test, self.prediction)
-        self.infoLabel.setText("SV Regression Model has created.")
 
+        try:
+            for j in range(0, len(self.x_column_list)):
+                x = pd.DataFrame(data = self.x_column_list[j])
+            for k in range(0, len(self.y_column_list)):
+                y = pd.DataFrame(data = self.y_column_list[k])
+            
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
+            
+            # We take the polynom degree from user,                  \/ right here.
+            polynomial_reg = PolynomialFeatures(degree = int(self.polyDegree_input.text()) )
+            x_poly = polynomial_reg.fit_transform(x)
+            
+            linear_reg = LinearRegression()
+            linear_reg.fit(x_poly, y)
+            self.prediction = linear_reg.predict(polynomial_reg.fit_transform(x_test))
+            
+            self.r2Score_poly = r2_score(y_test, self.prediction)
+            self.r2_Score(self.r2Score_poly)
+            
+            self.showResults(y_test, self.prediction)
+            self.infoLabel.setText("Polynomial Regression Model has created.")
+        except ValueError:
+            self.msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            self.msgBox.setText("Enter the polynomial regression's degree please.")
+            self.msgBox.setWindowTitle("An error ocured.")
+            self.msgBox.exec_()
+
+    def sv_reg_model(self):
+        try:
+            for j in range(0, len(self.x_column_list)):
+                x = pd.DataFrame(data = self.x_column_list[j])
+            for k in range(0, len(self.y_column_list)):
+                y = pd.DataFrame(data = self.y_column_list[k])
+            
+            # For SVR Model, we've to scale the data.
+            sc1 = StandardScaler()
+            scaled_x = sc1.fit_transform(x)
+            sc2 = StandardScaler()
+            scaled_y = sc2.fit_transform(y)
+            
+            # Giving scaled data for test/train process,          \/        \/  right here.
+            x_train, x_test, y_train, y_test = train_test_split(scaled_x, scaled_y, test_size=0.33, random_state=0)
+            
+            # Define the kernel. We take from user that value.
+            self.kernel = self.svrKernel_combobox.currentText()
+            # Set the kernel value  \/           \/ with format method.
+            sv_reg = SVR(kernel = '{}'.format(self.kernel))
+            sv_reg.fit(scaled_x, scaled_y)
+            self.prediction = sv_reg.predict(x_test)
+            
+            self.r2Score_sv = r2_score(y_test, self.prediction)
+            self.r2_Score(self.r2Score_sv)
+            
+            self.showResults(y_test, self.prediction)
+            self.infoLabel.setText("SV Regression Model has created.")
+        except ValueError:
+            self.msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            self.msgBox.setText("Choose the SV Regression's kernel please.")
+            self.msgBox.setWindowTitle("An error ocured.")
+            self.msgBox.exec_()
 
         
     def decisionTree_reg_model(self):
@@ -358,23 +387,29 @@ class Window(QtWidgets.QWidget):
         
         
     def randomForest_reg_model(self):
-        for j in range(0, len(self.x_column_list)):
-            x = pd.DataFrame(data = self.x_column_list[j])
-        for k in range(0, len(self.y_column_list)):
-            y = pd.DataFrame(data = self.y_column_list[k])
-        
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
-        
-        # Taking the n_estimators value from user                              \/ right here.
-        randomForest_reg = RandomForestRegressor(n_estimators = int(self.rf_nestimators_input.text()), random_state=0)
-        randomForest_reg.fit(x, y)
-        self.prediction = randomForest_reg.predict(x_test)
+        try:
+            for j in range(0, len(self.x_column_list)):
+                x = pd.DataFrame(data = self.x_column_list[j])
+            for k in range(0, len(self.y_column_list)):
+                y = pd.DataFrame(data = self.y_column_list[k])
+            
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=0)
+            
+            # Taking the n_estimators value from user                              \/ right here.
+            randomForest_reg = RandomForestRegressor(n_estimators = int(self.rf_nestimators_input.text()), random_state=0)
+            randomForest_reg.fit(x, y)
+            self.prediction = randomForest_reg.predict(x_test)
 
-        self.r2Score_rf = r2_score(y_test, self.prediction)
-        self.r2_Score(self.r2Score_rf)
-        
-        self.showResults(y_test, self.prediction)
-        self.infoLabel.setText("Random Forest R. Model has created.")
+            self.r2Score_rf = r2_score(y_test, self.prediction)
+            self.r2_Score(self.r2Score_rf)
+            
+            self.showResults(y_test, self.prediction)
+            self.infoLabel.setText("Random Forest R. Model has created.")
+        except ValueError:
+            self.msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            self.msgBox.setText("Enter the n_estimators value please.")
+            self.msgBox.setWindowTitle("An error ocured.")
+            self.msgBox.exec_()
         
     ###################### Model defining process has done. ######################
     
@@ -388,12 +423,6 @@ class Window(QtWidgets.QWidget):
     ###################### Results showing process is beginning. ######################
     
     def showResults(self, original_data, predicted_data):
-        # Why do we have to use try-except? Because SVR, Random Forest and Decision Tree Regression models are
-        # Giving the predicted data as a different dimension and as a numpy array. 
-        # We cannot call the column value like 409.statment. We will take
-        # out of bound (IndexError) If we'll call it like that. 
-        # So, that structure isn't working  for every model. We're catching the IndexError and showing the values
-        # according to their predicted data's shape and type.
         try:
             length = len(original_data)
             
@@ -439,8 +468,6 @@ class Window(QtWidgets.QWidget):
             else:
                 self.rf_dt_showingResults(original_data, predicted_data)
             
-            # SVR is giving the predicted data as a different dimension. But RF and DT are same.
-            # So, there are two function one of them is for SVR and the other one is for RF and DT.
     def svr_showingResults(self, original_data, predicted_data):
         length = len(original_data)
         
@@ -450,7 +477,7 @@ class Window(QtWidgets.QWidget):
         self.originalData.setRowCount(orgData_row)
         self.originalData.setColumnCount(orgData_col)
         
-        # As you can see we're not calling the row value of predicted data.
+
         predData_row = predicted_data.shape[0]
         
         self.predictedData.setRowCount(predData_row)
@@ -458,8 +485,8 @@ class Window(QtWidgets.QWidget):
         
         # Predicted and original data tables are setting.
         for i in range(0,length):
-                cell = original_data[i][0] # In other models, original_data (self.originalData) comes as a DataFrame. Right here It's a numpy array.
-                cell2 = predicted_data[i] # 1 dimension. (Look at 420.statement to see the difference.)
+                cell = original_data[i][0]
+                cell2 = predicted_data[i] 
                 self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
                 self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
                 self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
@@ -474,15 +501,15 @@ class Window(QtWidgets.QWidget):
         self.originalData.setRowCount(orgData_row)
         self.originalData.setColumnCount(orgData_col)
         
-        # RF and DT models are giving different dimension value but also, (go 484.statement)
+
         predData_row = predicted_data.shape[0]
         
         self.predictedData.setRowCount(predData_row)
         self.predictedData.setColumnCount(1)
         
         for i in range(0,length):
-                cell = original_data.iat[i,0] # It gives the the original data as a DataFrame (Like Linear and Polynomial) but,
-                cell2 = predicted_data[i] # In here, Its 1 dimensional. Look at the 420.statement to see the difference.
+                cell = original_data.iat[i,0] 
+                cell2 = predicted_data[i]
                 self.originalData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell)))
                 self.predictedData.setItem(i,0, QtWidgets.QTableWidgetItem(str(cell2)))
                 self.originalData.item(i,0).setBackground(QtGui.QColor(255,127,80))
@@ -500,7 +527,8 @@ class Window(QtWidgets.QWidget):
         file = open("{} Corr {}.txt".format(str(self.fileName.text()),today_date),"w+")
         file.write(str(self.df_data.corr()))
         os.startfile("{} Corr {}.txt".format(str(self.fileName.text()),today_date))
-   
+        
+        
     def clear_selections(self):
         for i in range(0, self.df_row):
             for k in range(0, self.df_col):
@@ -524,13 +552,14 @@ class Window(QtWidgets.QWidget):
         self.r2score_titleFont = QtGui.QFont("Trebuchet MS", 12, QtGui.QFont.Bold)
         self.buttonsFont = QtGui.QFont("Trebuchet MS", 10, QtGui.QFont.Bold)
         
+        self.infoLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.r2score_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.r2score_value.setAlignment(QtCore.Qt.AlignCenter)
+        
         self.data_table.setFont(self.tableFont)
         self.infoLabel.setFont(self.infoFont)
         self.originalData.setFont(self.tableFont)
         self.predictedData.setFont(self.tableFont)
-        self.infoLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.r2score_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.r2score_value.setAlignment(QtCore.Qt.AlignCenter)
         self.r2score_label.setFont(self.r2score_titleFont)
         self.r2score_value.setFont(self.TitleFont)
         self.labelFileName.setFont(self.TitleFont)
