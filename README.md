@@ -1,6 +1,8 @@
 # dataManager_wPredictionModels
 It reads excel files and creating a table as same as excel file shape and takes data from excel file. Able to define independent variable(s) (x) and dependent variable (y).
 
+![...](datamanager_img.png)
+
 # To read/upload excel file
 I added two excel files. Write file name at file name input(line edit) and click 'Set Table'.
 You can use another excel files. My excel files include random data.
